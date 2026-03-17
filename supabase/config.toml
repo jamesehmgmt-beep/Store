@@ -1,0 +1,7 @@
+project_id = "soxzxnbwfewbqiufzfbp"
+
+[functions.shopify-auth]
+verify_jwt = false
+
+[functions.create-shopify-discounts]
+verify_jwt = false
