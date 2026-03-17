@@ -137,6 +137,10 @@ const PRODUCT_BY_HANDLE_QUERY = `
               name
               value
             }
+            image {
+              url
+              altText
+            }
           }
         }
       }

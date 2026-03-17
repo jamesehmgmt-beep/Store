@@ -47,6 +47,10 @@ interface ProductData {
           name: string;
           value: string;
         }>;
+        image?: {
+          url: string;
+          altText: string | null;
+        };
       };
     }>;
   };
@@ -199,36 +203,36 @@ const mockReviews = [
   {
     id: 1,
     rating: 5,
-    title: "Underwear",
-    content: "Excellent for working out very comfortable",
+    title: "Beautiful Thobe",
+    content: "The quality of the fabric is exceptional. Lightweight, breathable, and perfect for daily wear or Friday prayers. Highly recommend!",
     fits: "True to size",
     sizePurchased: "Large",
-    daysAgo: 11,
+    daysAgo: 7,
     hasResponse: false,
   },
   {
     id: 2,
     rating: 5,
     title: "5 stars to Muslimeem!",
-    content: "Great fit, a tad expensive but they don't wear out!!",
+    content: "Gorgeous craftsmanship and modest design. I've been looking for something this elegant for a long time. Worth every penny.",
     fits: "True to size",
     sizePurchased: null,
-    daysAgo: 21,
+    daysAgo: 14,
     hasResponse: false,
   },
   {
     id: 3,
     rating: 5,
-    title: "Under Ease High Rise Bikini",
-    content: "These are amazing, comfortable and don't ride up. Nothing else on the market compares.",
+    title: "Stunning Hijab Collection",
+    content: "The fabric drapes so beautifully and doesn't slip at all. I've ordered in three colors already — nothing else compares.",
     fits: null,
     sizePurchased: null,
-    daysAgo: 24,
+    daysAgo: 21,
     hasResponse: true,
     response: {
       author: "Muslimeem Customer Care",
-      content: "The underwear that truly sets the bar.",
-      daysAgo: 24,
+      content: "We're so glad you love the collection! Modesty and elegance, always. 🤍",
+      daysAgo: 21,
     },
   },
 ];
@@ -597,14 +601,14 @@ const ProductPage = () => {
               <p className="text-base text-muted-foreground">{product.title}</p>
             </div>
 
-            {/* Compression Level */}
+            {/* Quality Level */}
             <div className="flex items-center gap-2">
               <div className="flex gap-0.5">
                 <div className="w-6 h-1 bg-foreground"></div>
                 <div className="w-6 h-1 bg-foreground"></div>
                 <div className="w-6 h-1 bg-muted"></div>
               </div>
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">Firm Compression</span>
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">Premium Quality</span>
             </div>
 
             {/* Rating & SKU */}
@@ -636,158 +640,51 @@ const ProductPage = () => {
             {/* Nude Options Box - Contains Color, Size, Quantity, Add to Bag */}
             <div className="bg-[#f5f0eb] p-5 rounded-2xl space-y-5">
               
-              {/* Color Options */}
-              {product.options.filter(opt => opt.name.toLowerCase() === 'color').map((option) => (
-                <div key={option.name} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Color</span>
-                    <span className="text-sm">{selectedOptions[option.name]}</span>
+              {/* Color Options - Variant Image Thumbnails */}
+              {product.options.filter(opt => opt.name.toLowerCase() === 'color').map((option) => {
+                // Build a map from color value to variant image
+                const colorImageMap: Record<string, string> = {};
+                product.variants.edges.forEach(({ node }) => {
+                  const colorOpt = node.selectedOptions.find(o => o.name.toLowerCase() === 'color');
+                  if (colorOpt && node.image?.url && !colorImageMap[colorOpt.value]) {
+                    colorImageMap[colorOpt.value] = node.image.url;
+                  }
+                });
+
+                return (
+                  <div key={option.name} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Color</span>
+                      <span className="text-sm">{selectedOptions[option.name]}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {option.values.map((value) => {
+                        const imageUrl = colorImageMap[value];
+                        return (
+                          <button
+                            key={value}
+                            onClick={() => setSelectedOptions((prev) => ({ ...prev, [option.name]: value }))}
+                            className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                              selectedOptions[option.name] === value
+                                ? "border-foreground ring-2 ring-foreground ring-offset-2"
+                                : "border-muted hover:border-foreground"
+                            }`}
+                            title={value}
+                          >
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={value} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="flex items-center justify-center w-full h-full bg-secondary text-xs text-muted-foreground">
+                                {value.slice(0, 3)}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    {option.values.map((value) => {
-                      const colorName = value.toLowerCase();
-                      const colorMap: Record<string, string> = {
-                        // Basic colors
-                        'black': '#000000',
-                        'white': '#FFFFFF',
-                        'red': '#DC2626',
-                        'blue': '#3B82F6',
-                        'green': '#22C55E',
-                        'yellow': '#FBBF24',
-                        'orange': '#F97316',
-                        'purple': '#9333EA',
-                        'pink': '#EC4899',
-                        // Neutrals & skin tones
-                        'nude': '#E8C4A2',
-                        'beige': '#D4B896',
-                        'tan': '#D2B48C',
-                        'cream': '#FFFDD0',
-                        'ivory': '#FFFFF0',
-                        'sand': '#C2B280',
-                        'natural': '#DCD0BA',
-                        'taupe': '#483C32',
-                        'khaki': '#C3B091',
-                        'champagne': '#F7E7CE',
-                        'camel': '#C19A6B',
-                        // Browns
-                        'brown': '#8B4513',
-                        'mocha': '#967969',
-                        'caramel': '#FFD59A',
-                        'chocolate': '#7B3F00',
-                        'coffee': '#6F4E37',
-                        'espresso': '#4A2C2A',
-                        'chestnut': '#954535',
-                        'cinnamon': '#D2691E',
-                        'amber': '#FFBF00',
-                        'copper': '#B87333',
-                        'bronze': '#CD7F32',
-                        'terracotta': '#E2725B',
-                        'rust': '#B7410E',
-                        // Pinks & Reds
-                        'rose': '#F43F5E',
-                        'blush': '#FEC5BB',
-                        'coral': '#FF6B6B',
-                        'salmon': '#FA8072',
-                        'peach': '#FFCBA4',
-                        'burgundy': '#800020',
-                        'wine': '#722F37',
-                        'maroon': '#800000',
-                        'cherry': '#DE3163',
-                        'ruby': '#E0115F',
-                        'crimson': '#DC143C',
-                        'scarlet': '#FF2400',
-                        'raspberry': '#E30B5C',
-                        'magenta': '#FF00FF',
-                        'fuchsia': '#FF00FF',
-                        'mauve': '#E0B0FF',
-                        'lilac': '#C8A2C8',
-                        'lavender': '#E6E6FA',
-                        'plum': '#8E4585',
-                        'orchid': '#DA70D6',
-                        'violet': '#8B00FF',
-                        // Blues
-                        'navy': '#000080',
-                        'cobalt': '#0047AB',
-                        'royal': '#4169E1',
-                        'azure': '#007FFF',
-                        'sky': '#87CEEB',
-                        'teal': '#008080',
-                        'turquoise': '#40E0D0',
-                        'aqua': '#00FFFF',
-                        'cyan': '#00FFFF',
-                        'sapphire': '#0F52BA',
-                        'indigo': '#4B0082',
-                        'midnight': '#191970',
-                        'denim': '#1560BD',
-                        'slate': '#708090',
-                        'steel': '#4682B4',
-                        'periwinkle': '#CCCCFF',
-                        // Greens
-                        'olive': '#808000',
-                        'sage': '#9CAF88',
-                        'mint': '#98FF98',
-                        'emerald': '#50C878',
-                        'jade': '#00A86B',
-                        'forest': '#228B22',
-                        'hunter': '#355E3B',
-                        'lime': '#32CD32',
-                        'moss': '#8A9A5B',
-                        'pistachio': '#93C572',
-                        'seafoam': '#71EEB8',
-                        'kelly': '#4CBB17',
-                        // Grays
-                        'grey': '#6B7280',
-                        'gray': '#6B7280',
-                        'charcoal': '#36454F',
-                        'silver': '#C0C0C0',
-                        'pewter': '#8F9494',
-                        'ash': '#B2BEB5',
-                        'graphite': '#383838',
-                        'smoke': '#738276',
-                        'iron': '#48494B',
-                        'gunmetal': '#2C3539',
-                        'lead': '#212121',
-                        'platinum': '#E5E4E2',
-                        'stone': '#928E85',
-                        // Light/Dark
-                        'light': '#F5F5F5',
-                        'dark': '#1F2937',
-                        // Gold/Metallic
-                        'gold': '#FFD700',
-                        'rose gold': '#B76E79',
-                        'brass': '#B5A642',
-                      };
-                      // Find the best matching color
-                      let bgColor = '#9CA3AF'; // default gray
-                      for (const [key, hex] of Object.entries(colorMap)) {
-                        if (colorName.includes(key)) {
-                          bgColor = hex;
-                          break;
-                        }
-                      }
-                      const isDark = ['black', 'navy', 'dark', 'charcoal', 'burgundy', 'wine', 'maroon', 'chocolate', 'espresso', 'coffee'].some(c => colorName.includes(c));
-                      
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => setSelectedOptions((prev) => ({ ...prev, [option.name]: value }))}
-                          className={`w-9 h-9 rounded-full border-2 transition-all relative ${
-                            selectedOptions[option.name] === value
-                              ? "border-foreground ring-2 ring-foreground ring-offset-2"
-                              : "border-muted hover:border-foreground"
-                          }`}
-                          style={{ backgroundColor: bgColor }}
-                          title={value}
-                        >
-                          {selectedOptions[option.name] === value && (
-                            <Check className={`w-4 h-4 absolute inset-0 m-auto ${isDark ? 'text-white' : 'text-foreground'}`} />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Size Options with Size Guide */}
               {product.options.filter(opt => opt.name.toLowerCase() === 'size').map((option) => (
@@ -848,7 +745,7 @@ const ProductPage = () => {
             {/* Non-returnable Notice */}
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
               <Info className="w-4 h-4" />
-              <span className="underline">Please note: This item is non-returnable</span>
+              <span className="underline">See our return policy for details</span>
             </div>
 
             {/* Buy the Set Upsell Section */}
@@ -1032,17 +929,17 @@ const ProductPage = () => {
 
             {/* Product Details Accordion Section */}
             <div className="space-y-0 pt-4 border-t border-border">
-              {/* Designed for Yoga and Casual */}
+              {/* Designed for Everyday Modesty */}
               <Collapsible open={designedOpen} onOpenChange={setDesignedOpen}>
                 <CollapsibleTrigger className="w-full flex items-center justify-between py-4 border-b border-border/50">
                   <div className="flex items-center gap-3">
                     <Dumbbell className="w-5 h-5" />
-                    <span className="text-sm font-medium">Designed for Yoga and Casual</span>
+                    <span className="text-sm font-medium">Designed for Everyday Modesty</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${designedOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-3 text-sm text-muted-foreground">
-                  Perfect for yoga sessions, casual wear, or everyday activities. The flexible design moves with you for maximum comfort.
+                  Crafted for daily wear, special occasions, and everything in between. Modest designs that move with you for comfort and confidence.
                 </CollapsibleContent>
               </Collapsible>
 
@@ -1060,17 +957,17 @@ const ProductPage = () => {
                 </CollapsibleContent>
               </Collapsible>
 
-              {/* High Rise, Bikini Fit */}
+              {/* Tailored Modest Fit */}
               <Collapsible open={fitOpen} onOpenChange={setFitOpen}>
                 <CollapsibleTrigger className="w-full flex items-center justify-between py-4 border-b border-border/50">
                   <div className="flex items-center gap-3">
                     <SlidersHorizontal className="w-5 h-5" />
-                    <span className="text-sm font-medium">High Rise, Bikini Fit</span>
+                    <span className="text-sm font-medium">Tailored Modest Fit</span>
                   </div>
                   <ChevronDown className={`w-4 h-4 transition-transform ${fitOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-3 text-sm text-muted-foreground">
-                  High-rise waistband provides extra coverage and support, while the bikini fit offers a flattering silhouette.
+                  Expertly tailored for a flattering and modest silhouette. Thoughtful construction ensures full coverage without compromising on style.
                 </CollapsibleContent>
               </Collapsible>
 
@@ -1084,10 +981,10 @@ const ProductPage = () => {
                   <ChevronDown className={`w-4 h-4 transition-transform ${productFeaturesOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-3 text-sm text-muted-foreground space-y-2">
-                  <p>• DuraFit® technology for firm compression</p>
-                  <p>• No leg bands for seamless look</p>
-                  <p>• 100% cotton gusset</p>
-                  <p>• Invisible under clothes</p>
+                  <p>• Premium modest fashion craftsmanship</p>
+                  <p>• Reinforced stitching for lasting quality</p>
+                  <p>• Wrinkle-resistant for easy travel</p>
+                  <p>• Elegant drape and structured fit</p>
                 </CollapsibleContent>
               </Collapsible>
 
@@ -1101,10 +998,9 @@ const ProductPage = () => {
                   <ChevronDown className={`w-4 h-4 transition-transform ${materialOpen ? 'rotate-180' : ''}`} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-3 text-sm text-muted-foreground space-y-2">
-                  <p><strong>Fabric:</strong> 59% polyamide, 41% elastane</p>
-                  <p><strong>Interior lining:</strong> 57% polyamide, 43% elastane</p>
-                  <p><strong>Care:</strong> Hand wash cold, do not bleach, line dry</p>
-                  <p><strong>Origin:</strong> Made sustainably in Colombia</p>
+                  <p><strong>Fabric:</strong> Premium blend — varies by product</p>
+                  <p><strong>Care:</strong> Machine wash cold, tumble dry low</p>
+                  <p><strong>Origin:</strong> Ethically sourced and crafted</p>
                 </CollapsibleContent>
               </Collapsible>
             </div>
@@ -1116,8 +1012,8 @@ const ProductPage = () => {
                 <ChevronDown className={`w-4 h-4 transition-transform ${featuresOpen ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 space-y-2 text-sm text-muted-foreground">
-                <p><strong>Care:</strong> Hand wash cold, do not bleach, line dry.</p>
-                <p><strong>Origin:</strong> Made in Colombia</p>
+                <p><strong>Care:</strong> Machine wash cold, tumble dry low.</p>
+                <p><strong>Origin:</strong> Ethically sourced and crafted</p>
               </CollapsibleContent>
             </Collapsible>
 
@@ -1131,7 +1027,7 @@ const ProductPage = () => {
                 <p><strong>Free Shipping:</strong> On all orders over $99</p>
                 <p><strong>Standard Shipping:</strong> 5-7 business days</p>
                 <p><strong>Express Shipping:</strong> 2-3 business days</p>
-                <p className="pt-2"><strong>Returns:</strong> Due to hygiene reasons, this item is non-returnable and non-exchangeable.</p>
+                <p><strong>Returns:</strong> We accept returns within 30 days for unworn items in original packaging. See our returns page for details.</p>
               </CollapsibleContent>
             </Collapsible>
           </div>
@@ -1148,7 +1044,7 @@ const ProductPage = () => {
               <div className="w-10 h-1 bg-red-600 mt-6"></div>
             </div>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-sm">
-              The ones you'll reach for. These soft underwear move with you (and don't dig in) during workouts and hang outs.
+              Every piece tells a story of faith, culture, and timeless elegance. We craft modest fashion that honors tradition while embracing modern style.
             </p>
           </div>
 
@@ -1177,17 +1073,17 @@ const ProductPage = () => {
 
         {/* Accordion Section */}
         <div className="mt-12 max-w-6xl mx-auto">
-          {/* Designed for Yoga and Casual */}
+          {/* Designed for Everyday Modesty */}
           <Collapsible open={designedOpen} onOpenChange={setDesignedOpen}>
             <CollapsibleTrigger className="w-full flex items-center justify-between py-5 border-b border-border/30">
               <div className="flex items-center gap-4">
                 <Dumbbell className="w-5 h-5" />
-                <span className="text-base font-medium">Designed for Yoga and Casual</span>
+                <span className="text-base font-medium">Designed for Everyday Modesty</span>
               </div>
               <Plus className={`w-5 h-5 transition-transform ${designedOpen ? 'rotate-45' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-4 text-sm text-muted-foreground">
-              Perfect for yoga sessions, casual wear, or everyday activities. The flexible design moves with you for maximum comfort.
+              Crafted for daily wear, special occasions, and everything in between. Modest designs that move with you for comfort and confidence.
             </CollapsibleContent>
           </Collapsible>
 
@@ -1205,17 +1101,17 @@ const ProductPage = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* High Rise, Bikini Fit */}
+          {/* Tailored Modest Fit */}
           <Collapsible open={fitOpen} onOpenChange={setFitOpen}>
             <CollapsibleTrigger className="w-full flex items-center justify-between py-5 border-b border-border/30">
               <div className="flex items-center gap-4">
                 <SlidersHorizontal className="w-5 h-5" />
-                <span className="text-base font-medium">High Rise, Bikini Fit</span>
+                <span className="text-base font-medium">Tailored Modest Fit</span>
               </div>
               <Plus className={`w-5 h-5 transition-transform ${fitOpen ? 'rotate-45' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-4 text-sm text-muted-foreground">
-              High-rise waistband provides extra coverage and support, while the bikini fit offers a flattering silhouette.
+              Expertly tailored for a flattering and modest silhouette. Thoughtful construction ensures full coverage without compromising on style.
             </CollapsibleContent>
           </Collapsible>
 
@@ -1229,10 +1125,10 @@ const ProductPage = () => {
               <Plus className={`w-5 h-5 transition-transform ${productFeaturesOpen ? 'rotate-45' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-4 text-sm text-muted-foreground space-y-2">
-              <p>• DuraFit® technology for firm compression</p>
-              <p>• No leg bands for seamless look</p>
-              <p>• 100% cotton gusset</p>
-              <p>• Invisible under clothes</p>
+              <p>• Premium modest fashion craftsmanship</p>
+              <p>• Reinforced stitching for lasting quality</p>
+              <p>• Wrinkle-resistant for easy travel</p>
+              <p>• Elegant drape and structured fit</p>
             </CollapsibleContent>
           </Collapsible>
 
@@ -1246,10 +1142,9 @@ const ProductPage = () => {
               <Plus className={`w-5 h-5 transition-transform ${materialOpen ? 'rotate-45' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-4 text-sm text-muted-foreground space-y-2">
-              <p><strong>Fabric:</strong> 59% polyamide, 41% elastane</p>
-              <p><strong>Interior lining:</strong> 57% polyamide, 43% elastane</p>
-              <p><strong>Care:</strong> Hand wash cold, do not bleach, line dry</p>
-              <p><strong>Origin:</strong> Made sustainably in Colombia</p>
+              <p><strong>Fabric:</strong> Premium blend — varies by product</p>
+              <p><strong>Care:</strong> Machine wash cold, tumble dry low</p>
+              <p><strong>Origin:</strong> Ethically sourced and crafted</p>
             </CollapsibleContent>
           </Collapsible>
         </div>
