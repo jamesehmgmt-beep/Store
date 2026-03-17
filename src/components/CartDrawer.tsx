@@ -34,10 +34,20 @@ export const CartDrawer = ({ children }: CartDrawerProps) => {
   } = useCartStore();
 
   const handleCheckout = async () => {
+    // Open window BEFORE async call — browsers block popups after async in incognito
+    const win = window.open('about:blank', '_blank');
     const checkoutUrl = await createCheckout();
     if (checkoutUrl) {
-      window.open(checkoutUrl, '_blank');
+      if (win && !win.closed) {
+        win.location.href = checkoutUrl;
+      } else {
+        // Fallback if popup was still blocked — navigate in same tab
+        window.location.href = checkoutUrl;
+      }
       setOpen(false);
+    } else {
+      // Close blank tab if checkout failed
+      if (win && !win.closed) win.close();
     }
   };
 
