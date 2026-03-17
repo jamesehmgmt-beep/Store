@@ -35,7 +35,29 @@ export const VideoHeroSection = ({
 
   useEffect(() => {
     if (isVisible && videoRef.current) {
+      // Try to play immediately (works on desktop and some mobile)
       videoRef.current.play().catch(() => {});
+
+      // iOS workaround: listen for first user interaction to trigger playback
+      const tryPlay = () => {
+        if (videoRef.current) {
+          videoRef.current.play().catch(() => {});
+        }
+        // Clean up all listeners after first successful interaction
+        document.removeEventListener('touchstart', tryPlay);
+        document.removeEventListener('scroll', tryPlay);
+        document.removeEventListener('click', tryPlay);
+      };
+
+      document.addEventListener('touchstart', tryPlay, { once: true, passive: true });
+      document.addEventListener('scroll', tryPlay, { once: true, passive: true });
+      document.addEventListener('click', tryPlay, { once: true });
+
+      return () => {
+        document.removeEventListener('touchstart', tryPlay);
+        document.removeEventListener('scroll', tryPlay);
+        document.removeEventListener('click', tryPlay);
+      };
     }
   }, [isVisible]);
 
