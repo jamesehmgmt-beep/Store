@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import heroImage from "@/assets/hero1.png";
+import heroImage from "@/assets/hero1.webp";
 
 interface HeroSectionProps {
   ctaLink?: string;

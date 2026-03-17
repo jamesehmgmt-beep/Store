@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useRef, useState, useEffect } from "react";
 import heroVideo from "@/assets/muslimeem_video.mp4";
 
 interface VideoHeroSectionProps {
@@ -10,18 +11,50 @@ export const VideoHeroSection = ({
   ctaLink = "/category/collections",
   className 
 }: VideoHeroSectionProps) => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isVisible && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isVisible]);
+
   return (
-    <section className={`relative w-full overflow-hidden bg-secondary aspect-video md:aspect-[16/9] ${className || ''}`}>
-      {/* Video background - autoplay, loop, muted */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src={heroVideo} type="video/mp4" />
-      </video>
+    <section ref={sectionRef} className={`relative w-full overflow-hidden bg-secondary aspect-video md:aspect-[16/9] ${className || ''}`}>
+      {/* Video background - only loads when scrolled near */}
+      {isVisible && (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="none"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={heroVideo} type="video/mp4" />
+        </video>
+      )}
       
       {/* Overlay */}
       <div className="absolute inset-0 hero-overlay" />

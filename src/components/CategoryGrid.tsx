@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import bestsellerImage from "@/assets/bestseller.png";
-import thobeImage from "@/assets/thobe.png";
-import hijabImage from "@/assets/hijab.png";
-import jewelryImage from "@/assets/jewelry.png";
+import bestsellerImage from "@/assets/bestseller.webp";
+import thobeImage from "@/assets/thobe.webp";
+import hijabImage from "@/assets/hijab.webp";
+import jewelryImage from "@/assets/jewelry.webp";
 
 export const CategoryGrid = () => {
   return (
@@ -16,6 +16,7 @@ export const CategoryGrid = () => {
           <img 
             src={bestsellerImage} 
             alt="Bestsellers"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
@@ -34,6 +35,7 @@ export const CategoryGrid = () => {
           <img 
             src={thobeImage} 
             alt="Thobe"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
@@ -52,6 +54,7 @@ export const CategoryGrid = () => {
           <img 
             src={hijabImage} 
             alt="Hijab"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
@@ -70,6 +73,7 @@ export const CategoryGrid = () => {
           <img 
             src={jewelryImage} 
             alt="Jewelry"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { User, ShoppingBag, Menu, X } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { CartDrawer } from "./CartDrawer";
-import muslimeemLogo from "@/assets/muslimeem-logo.png";
+import muslimeemLogo from "@/assets/muslimeem-logo.webp";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Sheet,

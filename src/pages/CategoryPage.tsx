@@ -7,10 +7,10 @@ import { fetchProducts, formatPrice, ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 
-import thobeImage from "@/assets/thobe.png";
-import hijabImage from "@/assets/hijab.png";
-import bestsellerImage from "@/assets/bestseller.png";
-import jewelryImage from "@/assets/jewelry.png";
+import thobeImage from "@/assets/thobe.webp";
+import hijabImage from "@/assets/hijab.webp";
+import bestsellerImage from "@/assets/bestseller.webp";
+import jewelryImage from "@/assets/jewelry.webp";
 
 // Subcategory circles configuration
 const subcategoryCircles = [
