@@ -53,7 +53,7 @@ export interface ShopifyProduct {
 
 // GraphQL Queries
 const STOREFRONT_QUERY = `
-  query GetProducts($first: Int!, $query: String) {
+  query GetProducts($first: Int!, $query: String) @inContext(country: US) {
     products(first: $first, query: $query) {
       edges {
         node {
@@ -67,7 +67,7 @@ const STOREFRONT_QUERY = `
               currencyCode
             }
           }
-          images(first: 5) {
+          images(first: 10) {
             edges {
               node {
                 url
@@ -75,7 +75,7 @@ const STOREFRONT_QUERY = `
               }
             }
           }
-          variants(first: 10) {
+          variants(first: 20) {
             edges {
               node {
                 id
@@ -88,6 +88,10 @@ const STOREFRONT_QUERY = `
                 selectedOptions {
                   name
                   value
+                }
+                image {
+                  url
+                  altText
                 }
               }
             }
@@ -103,7 +107,7 @@ const STOREFRONT_QUERY = `
 `;
 
 const PRODUCT_BY_HANDLE_QUERY = `
-  query GetProductByHandle($handle: String!) {
+  query GetProductByHandle($handle: String!) @inContext(country: US) {
     productByHandle(handle: $handle) {
       id
       title
@@ -115,7 +119,7 @@ const PRODUCT_BY_HANDLE_QUERY = `
           currencyCode
         }
       }
-      images(first: 10) {
+      images(first: 20) {
         edges {
           node {
             url
@@ -123,7 +127,7 @@ const PRODUCT_BY_HANDLE_QUERY = `
           }
         }
       }
-      variants(first: 20) {
+      variants(first: 50) {
         edges {
           node {
             id

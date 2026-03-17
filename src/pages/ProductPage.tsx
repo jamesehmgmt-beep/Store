@@ -521,6 +521,24 @@ const ProductPage = () => {
   const currentPrice = selectedVariant?.price.amount || product?.priceRange.minVariantPrice.amount || "0";
   const originalPrice = (parseFloat(currentPrice) * 1.26).toFixed(2); // Simulated original price for sale
 
+  // Build display images: put the selected variant's image first if it exists
+  const displayImages = (() => {
+    if (!selectedVariant?.image?.url) return images;
+    const variantImgUrl = selectedVariant.image.url;
+    // Check if the variant image is already in the product images
+    const existingIdx = images.findIndex(img => img.node.url === variantImgUrl);
+    if (existingIdx === 0) return images; // Already first
+    if (existingIdx > 0) {
+      // Move variant image to front
+      const reordered = [...images];
+      const [moved] = reordered.splice(existingIdx, 1);
+      reordered.unshift(moved);
+      return reordered;
+    }
+    // Variant image not in product images — prepend it
+    return [{ node: { url: variantImgUrl, altText: selectedVariant.image.altText } }, ...images];
+  })();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -575,7 +593,7 @@ const ProductPage = () => {
           {/* Left - Image Grid (2 per row) */}
           <div className="space-y-1">
             <div className="grid grid-cols-2 gap-1">
-              {images.slice(0, 6).map((img, idx) => (
+              {displayImages.slice(0, 6).map((img, idx) => (
                 <div key={idx} className="relative aspect-[3/4] bg-[#f5f0eb] overflow-hidden">
                   <img
                     src={img.node.url}
@@ -758,7 +776,7 @@ const ProductPage = () => {
                   <div className="flex gap-3 mb-4">
                     <div className="w-24 h-28 bg-[#e8e4df] rounded-xl overflow-hidden flex-shrink-0">
                       <img 
-                        src={images[0]?.node.url || ''} 
+                        src={displayImages[0]?.node.url || ''} 
                         alt={product.title}
                         className="w-full h-full object-cover"
                       />
@@ -771,32 +789,24 @@ const ProductPage = () => {
                       </div>
                   </div>
                   <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <select 
-                        value={bundle1Color}
-                        onChange={(e) => setBundle1Color(e.target.value)}
-                        className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
-                      >
-                        <option value="">Color</option>
-                        {product.options.find(o => o.name.toLowerCase() === 'color')?.values.map(v => (
-                          <option key={v} value={v}>{v}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                    </div>
-                    <div className="relative flex-1">
-                      <select 
-                        value={bundle1Size}
-                        onChange={(e) => setBundle1Size(e.target.value)}
-                        className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
-                      >
-                        <option value="">Size</option>
-                        {product.options.find(o => o.name.toLowerCase() === 'size')?.values.map(v => (
-                          <option key={v} value={v}>{v}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                    </div>
+                    {product.options.map((option) => (
+                      <div key={option.name} className="relative flex-1">
+                        <select 
+                          value={option.name.toLowerCase() === 'color' ? bundle1Color : bundle1Size}
+                          onChange={(e) => {
+                            if (option.name.toLowerCase() === 'color') setBundle1Color(e.target.value);
+                            else setBundle1Size(e.target.value);
+                          }}
+                          className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
+                        >
+                          <option value="">{option.name}</option>
+                          {option.values.map(v => (
+                            <option key={v} value={v}>{v}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -823,32 +833,24 @@ const ProductPage = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <select 
-                          value={bundle2Color}
-                          onChange={(e) => setBundle2Color(e.target.value)}
-                          className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
-                        >
-                          <option value="">Color</option>
-                          {bundleProduct.options.find(o => o.name.toLowerCase() === 'color')?.values.map(v => (
-                            <option key={v} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                      </div>
-                      <div className="relative flex-1">
-                        <select 
-                          value={bundle2Size}
-                          onChange={(e) => setBundle2Size(e.target.value)}
-                          className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
-                        >
-                          <option value="">Size</option>
-                          {bundleProduct.options.find(o => o.name.toLowerCase() === 'size')?.values.map(v => (
-                            <option key={v} value={v}>{v}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                      </div>
+                      {bundleProduct.options.map((option: { name: string; values: string[] }) => (
+                        <div key={option.name} className="relative flex-1">
+                          <select 
+                            value={option.name.toLowerCase() === 'color' ? bundle2Color : bundle2Size}
+                            onChange={(e) => {
+                              if (option.name.toLowerCase() === 'color') setBundle2Color(e.target.value);
+                              else setBundle2Size(e.target.value);
+                            }}
+                            className="w-full appearance-none text-sm border-0 rounded-full px-4 py-3 pr-10 bg-[#f5f0eb] text-foreground"
+                          >
+                            <option value="">{option.name}</option>
+                            {option.values.map((v: string) => (
+                              <option key={v} value={v}>{v}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ) : (
@@ -858,73 +860,93 @@ const ProductPage = () => {
                 )}
               </div>
 
-              {/* Choose Color and Size Button - Only enabled when all selections made */}
-              <Button 
-                variant="secondary" 
-                className={`w-full h-11 text-sm font-medium uppercase tracking-wide rounded-full ${
-                  bundle1Color && bundle1Size && bundle2Color && bundle2Size
-                    ? 'bg-foreground text-background hover:bg-foreground/90'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
-                disabled={!(bundle1Color && bundle1Size && bundle2Color && bundle2Size && bundleProduct)}
-                onClick={() => {
-                  if (bundle1Color && bundle1Size && bundle2Color && bundle2Size && product && bundleProduct) {
-                    // Find the exact variant for item 1 (current product)
-                    const variant1 = product.variants.edges.find(({ node }) => {
-                      const colorMatch = node.selectedOptions.find(opt => opt.name.toLowerCase() === 'color')?.value === bundle1Color;
-                      const sizeMatch = node.selectedOptions.find(opt => opt.name.toLowerCase() === 'size')?.value === bundle1Size;
-                      return colorMatch && sizeMatch;
-                    })?.node;
+              {/* Dynamic Add to Bag Button */}
+              {(() => {
+                // Check if all required options are filled for product 1
+                const p1HasColor = product.options.some(o => o.name.toLowerCase() === 'color');
+                const p1HasSize = product.options.some(o => o.name.toLowerCase() === 'size');
+                const p1Ready = (!p1HasColor || bundle1Color) && (!p1HasSize || bundle1Size);
 
-                    // Find the exact variant for item 2 (different product)
-                    const variant2 = bundleProduct.variants.edges.find(({ node }) => {
-                      const colorMatch = node.selectedOptions.find(opt => opt.name.toLowerCase() === 'color')?.value === bundle2Color;
-                      const sizeMatch = node.selectedOptions.find(opt => opt.name.toLowerCase() === 'size')?.value === bundle2Size;
-                      return colorMatch && sizeMatch;
-                    })?.node;
+                // Check if all required options are filled for product 2
+                const p2HasColor = bundleProduct?.options.some((o: { name: string }) => o.name.toLowerCase() === 'color');
+                const p2HasSize = bundleProduct?.options.some((o: { name: string }) => o.name.toLowerCase() === 'size');
+                const p2Ready = (!p2HasColor || bundle2Color) && (!p2HasSize || bundle2Size);
 
-                    if (variant1 && variant2) {
-                      // Add first item (current product)
-                      addItem({
-                        product: { node: product },
-                        variantId: variant1.id,
-                        variantTitle: `${bundle1Color} / ${bundle1Size}`,
-                        price: variant1.price,
-                        quantity: 1,
-                        selectedOptions: [
-                          { name: 'Color', value: bundle1Color },
-                          { name: 'Size', value: bundle1Size }
-                        ],
-                      });
+                const allReady = p1Ready && p2Ready && bundleProduct;
 
-                      // Add second item (different product)
-                      addItem({
-                        product: { node: bundleProduct },
-                        variantId: variant2.id,
-                        variantTitle: `${bundle2Color} / ${bundle2Size}`,
-                        price: variant2.price,
-                        quantity: 1,
-                        selectedOptions: [
-                          { name: 'Color', value: bundle2Color },
-                          { name: 'Size', value: bundle2Size }
-                        ],
-                      });
+                return (
+                  <Button 
+                    variant="secondary" 
+                    className={`w-full h-11 text-sm font-medium uppercase tracking-wide rounded-full ${
+                      allReady
+                        ? 'bg-foreground text-background hover:bg-foreground/90'
+                        : 'bg-muted text-muted-foreground cursor-not-allowed'
+                    }`}
+                    disabled={!allReady}
+                    onClick={() => {
+                      if (!allReady || !product || !bundleProduct) return;
 
-                      toast.success("Items added to bag!", {
-                        description: "2 items have been added to your cart.",
-                        position: "top-center",
-                      });
-                    } else {
-                      toast.error("Could not find variant", {
-                        description: "Please try different color/size combinations.",
-                        position: "top-center",
-                      });
-                    }
-                  }
-                }}
-              >
-                {bundle1Color && bundle1Size && bundle2Color && bundle2Size ? 'Add Both to Bag' : 'Choose Color and Size'}
-              </Button>
+                      // Find variant 1 by matching all selected options
+                      const variant1 = product.variants.edges.find(({ node }) => {
+                        return node.selectedOptions.every(opt => {
+                          if (opt.name.toLowerCase() === 'color') return opt.value === bundle1Color;
+                          if (opt.name.toLowerCase() === 'size') return opt.value === bundle1Size;
+                          return true;
+                        });
+                      })?.node;
+
+                      // Find variant 2 by matching all selected options
+                      const variant2 = bundleProduct.variants.edges.find(({ node }) => {
+                        return node.selectedOptions.every((opt: { name: string; value: string }) => {
+                          if (opt.name.toLowerCase() === 'color') return opt.value === bundle2Color;
+                          if (opt.name.toLowerCase() === 'size') return opt.value === bundle2Size;
+                          return true;
+                        });
+                      })?.node;
+
+                      if (variant1 && variant2) {
+                        const opts1: Array<{ name: string; value: string }> = [];
+                        if (bundle1Color) opts1.push({ name: 'Color', value: bundle1Color });
+                        if (bundle1Size) opts1.push({ name: 'Size', value: bundle1Size });
+
+                        addItem({
+                          product: { node: product },
+                          variantId: variant1.id,
+                          variantTitle: opts1.map(o => o.value).join(' / '),
+                          price: variant1.price,
+                          quantity: 1,
+                          selectedOptions: opts1,
+                        });
+
+                        const opts2: Array<{ name: string; value: string }> = [];
+                        if (bundle2Color) opts2.push({ name: 'Color', value: bundle2Color });
+                        if (bundle2Size) opts2.push({ name: 'Size', value: bundle2Size });
+
+                        addItem({
+                          product: { node: bundleProduct },
+                          variantId: variant2.id,
+                          variantTitle: opts2.map(o => o.value).join(' / '),
+                          price: variant2.price,
+                          quantity: 1,
+                          selectedOptions: opts2,
+                        });
+
+                        toast.success("Items added to bag!", {
+                          description: "2 items have been added to your cart.",
+                          position: "top-center",
+                        });
+                      } else {
+                        toast.error("Could not find variant", {
+                          description: "Please try different options.",
+                          position: "top-center",
+                        });
+                      }
+                    }}
+                  >
+                    {allReady ? 'Add Both to Bag' : 'Choose Options'}
+                  </Button>
+                );
+              })()}
             </div>
 
             {/* Product Details Accordion Section */}
