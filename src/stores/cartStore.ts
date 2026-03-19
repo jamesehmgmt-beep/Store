@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ShopifyProduct, createStorefrontCheckout } from '@/lib/shopify';
+import { toast } from 'sonner';
 
 export interface CartItem {
   product: ShopifyProduct;
@@ -128,17 +129,23 @@ export const useCartStore = create<CartStore>()(
 
       createCheckout: async () => {
         const { items, setLoading, setCheckoutUrl } = get();
-        if (items.length === 0) return null;
+        // Filter out local shipping fee items — they use a placeholder variant ID
+        // that doesn't exist in Shopify and would cause the cart creation to fail
+        const productItems = items.filter(item => !item.isShippingFee);
+        if (productItems.length === 0) return null;
 
         setLoading(true);
         try {
           const checkoutUrl = await createStorefrontCheckout(
-            items.map(item => ({ variantId: item.variantId, quantity: item.quantity }))
+            productItems.map(item => ({ variantId: item.variantId, quantity: item.quantity }))
           );
           setCheckoutUrl(checkoutUrl);
           return checkoutUrl;
         } catch (error) {
           console.error('Failed to create checkout:', error);
+          toast.error('Checkout failed', {
+            description: 'Unable to create checkout. Please try again.',
+          });
           return null;
         } finally {
           setLoading(false);
