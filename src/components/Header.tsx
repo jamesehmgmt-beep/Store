@@ -183,7 +183,7 @@ export const Header = () => {
               <User className={`w-5 h-5 ${user ? 'fill-foreground' : ''}`} />
             </button>
             <CartDrawer>
-              <button className="relative text-foreground hover:opacity-70 transition-opacity hidden lg:block">
+              <button className="relative text-foreground hover:opacity-70 transition-opacity">
                 <ShoppingBag className="w-5 h-5" />
                 {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 w-5 h-5 bg-foreground text-background text-xs flex items-center justify-center rounded-full">

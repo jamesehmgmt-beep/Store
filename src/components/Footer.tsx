@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 const footerLinks = {
   information: {
     title: "Information",
@@ -72,21 +74,35 @@ const footerLinks = {
   }
 };
 export const Footer = () => {
+  const [email, setEmail] = useState("");
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    toast.success("Thanks for subscribing!", {
+      description: "You'll be the first to hear about new arrivals and offers.",
+    });
+    setEmail("");
+  };
+
   return <footer className="bg-foreground text-background">
       {/* Social follow section */}
       <div className="py-8 border-b border-background/20">
         <p className="text-center text-xs tracking-widest uppercase mb-4">FOLLOW US ON INSTAGRAM @MUSLIMEEMAPPAREL</p>
         <div className="flex justify-center gap-4">
-          <a href="#" className="hover:opacity-70 transition-opacity">
+          <a href="https://instagram.com/muslimeemapparel" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
             <Instagram className="w-5 h-5" />
           </a>
-          <a href="#" className="hover:opacity-70 transition-opacity">
+          <a href="https://facebook.com/muslimeemapparel" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
             <Facebook className="w-5 h-5" />
           </a>
-          <a href="#" className="hover:opacity-70 transition-opacity">
+          <a href="https://x.com/muslimeemapparel" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
             <Twitter className="w-5 h-5" />
           </a>
-          <a href="#" className="hover:opacity-70 transition-opacity">
+          <a href="https://youtube.com/@muslimeemapparel" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
             <Youtube className="w-5 h-5" />
           </a>
         </div>
@@ -113,8 +129,8 @@ export const Footer = () => {
             <p className="text-xs text-background/70 mb-4">
               Be the first to hear about new arrivals, offers, and more. Sign up to get early access.
             </p>
-            <form className="space-y-3">
-              <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 bg-transparent border border-background/30 text-sm placeholder:text-background/50 focus:outline-none focus:border-background" />
+            <form className="space-y-3" onSubmit={handleNewsletterSubmit}>
+              <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 bg-transparent border border-background/30 text-sm placeholder:text-background/50 focus:outline-none focus:border-background" />
               <button type="submit" className="w-full py-3 bg-background text-foreground text-xs tracking-widest uppercase hover:bg-background/90 transition-colors">
                 Subscribe
               </button>
