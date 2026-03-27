@@ -140,6 +140,10 @@ export const Footer = () => {
       </div>
 
       {/* Bottom bar */}
-      
+      <div className="py-4 border-t border-background/20 text-center">
+        <p className="text-xs text-background/50">
+          © {new Date().getFullYear()} MUSLIMEEM. All rights reserved.
+        </p>
+      </div>
     </footer>;
 };
