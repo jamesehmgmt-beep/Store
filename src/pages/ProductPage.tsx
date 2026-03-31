@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Minus, Plus, Heart, Star, Info, ChevronDown, Ruler, Check, Dumbbell, Leaf, SlidersHorizontal, Settings, WashingMachine, ChevronLeft, ChevronRight, Search, ThumbsUp, MessageSquare } from "lucide-react";
 import { Header } from "@/components/Header";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { fetchProductByHandle, fetchProducts, formatPrice, ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
+import { trackViewContent, trackAddToCart } from "@/lib/tiktokPixel";
 import {
   Collapsible,
   CollapsibleContent,
@@ -451,10 +452,13 @@ const ProductPage = () => {
   const [bundle2Size, setBundle2Size] = useState("");
   const [bundleProduct, setBundleProduct] = useState<ProductData | null>(null);
 
+  const hasTrackedView = useRef(false);
+
   useEffect(() => {
     const loadProduct = async () => {
       if (!handle) return;
       setLoading(true);
+      hasTrackedView.current = false;
       const data = await fetchProductByHandle(handle);
       setProduct(data);
       
@@ -467,6 +471,18 @@ const ProductPage = () => {
         });
         setSelectedOptions(defaults);
       }
+
+      // TikTok Pixel: Track ViewContent
+      if (data && !hasTrackedView.current) {
+        hasTrackedView.current = true;
+        trackViewContent({
+          id: data.id,
+          name: data.title,
+          price: parseFloat(data.priceRange.minVariantPrice.amount),
+          currency: data.priceRange.minVariantPrice.currencyCode,
+        });
+      }
+
       setLoading(false);
     };
     loadProduct();
@@ -508,6 +524,15 @@ const ProductPage = () => {
       price: variant.price,
       quantity,
       selectedOptions: variant.selectedOptions,
+    });
+
+    // TikTok Pixel: Track AddToCart
+    trackAddToCart({
+      id: product.id,
+      name: product.title,
+      price: parseFloat(variant.price.amount),
+      quantity,
+      currency: variant.price.currencyCode,
     });
 
     toast.success("Added to cart!", {

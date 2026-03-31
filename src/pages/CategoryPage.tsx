@@ -6,6 +6,7 @@ import { FreeShippingBar } from "@/components/FreeShippingBar";
 import { fetchProducts, formatPrice, ShopifyProduct } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
+import { trackAddToCart } from "@/lib/tiktokPixel";
 
 import thobeImage from "@/assets/thobe.webp";
 import hijabImage from "@/assets/hijab.webp";
@@ -96,6 +97,15 @@ const CategoryPage = () => {
       price: firstVariant.price,
       quantity: 1,
       selectedOptions: firstVariant.selectedOptions,
+    });
+
+    // TikTok Pixel: Track AddToCart
+    trackAddToCart({
+      id: product.node.id,
+      name: product.node.title,
+      price: parseFloat(firstVariant.price.amount),
+      quantity: 1,
+      currency: firstVariant.price.currencyCode,
     });
 
     toast.success("Added to cart!", {

@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { z } from "zod";
+import { trackCompleteRegistration } from "@/lib/tiktokPixel";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -61,6 +62,7 @@ const AuthPage = () => {
             toast.error(error.message);
           }
         } else {
+          trackCompleteRegistration();
           toast.success("Account created successfully!");
           navigate("/account");
         }

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, Loader2, ExternalLink, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/shopify";
+import { trackInitiateCheckout, trackPlaceAnOrder } from "@/lib/tiktokPixel";
 
 interface CartDrawerProps {
   children: ReactNode;
@@ -34,6 +35,20 @@ export const CartDrawer = ({ children }: CartDrawerProps) => {
   } = useCartStore();
 
   const handleCheckout = async () => {
+    // TikTok Pixel: Track InitiateCheckout & PlaceAnOrder
+    const cartData = {
+      items: productItems.map(item => ({
+        id: item.product.node.id,
+        name: item.product.node.title,
+        price: parseFloat(item.price.amount),
+        quantity: item.quantity,
+      })),
+      totalValue: totalPrice,
+      currency: currencyCode,
+    };
+    trackInitiateCheckout(cartData);
+    trackPlaceAnOrder(cartData);
+
     // Open window BEFORE async call — browsers block popups after async in incognito
     const win = window.open('about:blank', '_blank');
     const checkoutUrl = await createCheckout();
